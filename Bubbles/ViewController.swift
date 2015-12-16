@@ -109,9 +109,9 @@ class ViewController: UIViewController, AVCaptureAudioDataOutputSampleBufferDele
                     // play pop sound
                     bubble.removeFromSuperview()
                     
-                    let popData = NSDataAsset(name: "Pop")
+                    let balloonData = NSDataAsset(name: "Balloon")
                     
-                    let player = try?AVAudioPlayer(data: popData!.data)
+                    let player = try?AVAudioPlayer(data: balloonData!.data)
                     
                     self.players.append(player!)
                     
