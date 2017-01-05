@@ -10,13 +10,13 @@ import UIKit
 
 @IBDesignable class Bubble: UIView {
 
-    @IBInspectable var color: UIColor = UIColor.blackColor()
+    @IBInspectable var color: UIColor = UIColor.black
     
     @IBInspectable var spacing: CGFloat = 1
     
     @IBInspectable var maxRings: Int = 0
     
-    override func drawRect(rect: CGRect) {
+    override func draw(_ rect: CGRect) {
         
         print(maxRings)
         
@@ -37,11 +37,11 @@ import UIKit
             
             if ringCount == maxRings { inset = radius }
             
-            let insetRect = CGRectInset(rect, inset, inset)
+            let insetRect = rect.insetBy(dx: inset, dy: inset)
             
-            CGContextStrokeEllipseInRect(context, insetRect)
+            context?.strokeEllipse(in: insetRect)
             
-            ringCount++
+            ringCount += 1
             inset += spacing
             
          

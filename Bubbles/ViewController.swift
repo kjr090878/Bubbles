@@ -20,7 +20,7 @@ class ViewController: UIViewController, AVCaptureAudioDataOutputSampleBufferDele
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let captureDevice = AVCaptureDevice.defaultDeviceWithMediaType(AVMediaTypeAudio)
+        let captureDevice = AVCaptureDevice.defaultDevice(withMediaType: AVMediaTypeAudio)
         
         let captureInput = try? AVCaptureDeviceInput(device: captureDevice!)
       
@@ -40,15 +40,13 @@ class ViewController: UIViewController, AVCaptureAudioDataOutputSampleBufferDele
             
         }
         
-        captureOutput.setSampleBufferDelegate(self, queue: dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0))
-//
-//        captureOutput.setSampleBufferDelegate(self, queue: dispatch_get_main_queue())
+        captureOutput.setSampleBufferDelegate(self, queue: DispatchQueue.global(qos: .background))
         
         session.startRunning()
         
     }
     
-    func captureOutput(captureOutput: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, fromConnection connection: AVCaptureConnection!) {
+    func captureOutput(_ captureOutput: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, from connection: AVCaptureConnection!) {
         
        
         
@@ -56,18 +54,18 @@ class ViewController: UIViewController, AVCaptureAudioDataOutputSampleBufferDele
 //        
 //        print("APL : \(channel?.averagePowerLevel) PHL : \(channel?.peakHoldLevel)")
 //        
-        if channel.averagePowerLevel > -5 {
+        if (channel as AnyObject).averagePowerLevel > -5 {
             
-//            print("Blowing")
+            print("Blowing")
             
             
-            dispatch_async(dispatch_get_main_queue())  {
+            DispatchQueue.main.async()  {
             
                 let bubbleSize = CGFloat(arc4random_uniform(15)*5) + 30
                 // randomize width and height
-                let bubble = Bubble(frame: CGRect(origin: CGPointZero, size: CGSize(width: bubbleSize, height: bubbleSize)))
+                let bubble = Bubble(frame: CGRect(origin: CGPoint(x:0, y:0), size: CGSize(width: bubbleSize, height: bubbleSize)))
                 
-                bubble.backgroundColor = UIColor.clearColor()
+                bubble.backgroundColor = UIColor.clear
                 
                 bubble.spacing = CGFloat(arc4random_uniform(10))
                 
@@ -75,7 +73,7 @@ class ViewController: UIViewController, AVCaptureAudioDataOutputSampleBufferDele
                 
                 bubble.setNeedsDisplay()
                 
-                let colors = [UIColor.blackColor(),UIColor.redColor(),UIColor.purpleColor()]
+                let colors = [UIColor.black,UIColor.red,UIColor.purple]
 
                 let randomColorIndex = Int(arc4random_uniform(3))
 
@@ -90,13 +88,13 @@ class ViewController: UIViewController, AVCaptureAudioDataOutputSampleBufferDele
 //            bubble.isMemberOfClass(Bubble)
              
             
-            let randomDuration = Double(abs(channel.averagePowerLevel))
+            let randomDuration = Double(abs((channel as AnyObject).averagePowerLevel))
                 
                 let randomX = CGFloat(arc4random_uniform(UInt32(self.view.frame.maxX)))
                 
                 let randomY = CGFloat(arc4random_uniform(UInt32(self.view.frame.midY)))
             
-            UIView.animateWithDuration(randomDuration, delay: 0, options: .CurveEaseOut, animations: { () -> Void in
+            UIView.animate(withDuration: randomDuration, delay: 0, options: .curveEaseOut, animations: { () -> Void in
                 
                 
                 
@@ -124,10 +122,10 @@ class ViewController: UIViewController, AVCaptureAudioDataOutputSampleBufferDele
         
     }
 
-    func audioPlayerDidFinishPlaying(player: AVAudioPlayer, successfully flag: Bool) {
+    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         
-        guard let index = players.indexOf(player) else { return }
-        players.removeAtIndex(index)
+        guard let index = players.index(of: player) else { return }
+        players.remove(at: index)
         
         print(players.count)
     }
