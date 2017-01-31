@@ -19,9 +19,11 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>10</string>
+	<string>11</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>If you blow into the microphone, bubbles will form on the screen.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>If you blow into the microphone, bubbles will form on the screen.</string>
 	<key>UILaunchStoryboardName</key>

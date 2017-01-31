@@ -14,25 +14,23 @@ import AVFoundation
 class ViewController: UIViewController, AVCaptureAudioDataOutputSampleBufferDelegate, AVAudioPlayerDelegate, UIAlertViewDelegate {
     
     var session = AVCaptureSession()
-    
     var players: [AVAudioPlayer] = []
+    let captureDevice = AVCaptureDevice.defaultDevice(withMediaType: AVMediaTypeAudio)
+    var captureInput : AVCaptureDeviceInput?
+    var captureOutput : AVCaptureAudioDataOutput?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let captureDevice = AVCaptureDevice.defaultDevice(withMediaType: AVMediaTypeAudio)
-        
-        let captureInput = try? AVCaptureDeviceInput(device: captureDevice!)
+        captureInput = try? AVCaptureDeviceInput(device: captureDevice)
       
-        
-     
         if session.canAddInput(captureInput) {
       
         session.addInput(captureInput)
         
         }
         
-        let captureOutput = AVCaptureAudioDataOutput()
+        captureOutput = AVCaptureAudioDataOutput()
         
         if session.canAddOutput(captureOutput) {
             
@@ -40,14 +38,28 @@ class ViewController: UIViewController, AVCaptureAudioDataOutputSampleBufferDele
             
         }
         
-        captureOutput.setSampleBufferDelegate(self, queue: DispatchQueue.global(qos: .background))
+        captureOutput?.setSampleBufferDelegate(self, queue: DispatchQueue.global(qos: .background))
         
-        session.startRunning()
+        NotificationCenter.default.addObserver(forName: .UIApplicationDidEnterBackground, object: nil, queue: nil) { n in
+            
+            self.players = []
+            for s in self.view.subviews { s.removeFromSuperview() }
+            self.session.stopRunning()
+            
+        }
+        
+        NotificationCenter.default.addObserver(forName: .UIApplicationWillEnterForeground, object: nil, queue: nil) { n in
+            
+            self.session.startRunning()
+            
+        }
         
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        
+         session.startRunning()
         
         let alertController = UIAlertController(title: "Instructions", message: "Blow into microphone to produce bubbles.", preferredStyle: UIAlertControllerStyle.alert)
         let cancelAction = UIAlertAction(title: "Cancel", style: UIAlertActionStyle.cancel) { (result : UIAlertAction) -> Void in
@@ -65,11 +77,11 @@ class ViewController: UIViewController, AVCaptureAudioDataOutputSampleBufferDele
         
        
         
-        guard let channel = connection.audioChannels.first else { return }
-//        
-//        print("APL : \(channel?.averagePowerLevel) PHL : \(channel?.peakHoldLevel)")
-//        
-        if (channel as AnyObject).averagePowerLevel > -5 {
+        guard let channel = connection.audioChannels.first as? AVCaptureAudioChannel else { return }
+
+        print("APL : \(channel.averagePowerLevel) PHL : \(channel.peakHoldLevel)")
+        
+        if channel.averagePowerLevel > -5 {
             
             print("Blowing")
             
@@ -103,7 +115,7 @@ class ViewController: UIViewController, AVCaptureAudioDataOutputSampleBufferDele
 //            bubble.isMemberOfClass(Bubble)
              
             
-            let randomDuration = Double(abs((channel as AnyObject).averagePowerLevel))
+            let randomDuration = Double(abs(channel.averagePowerLevel))
                 
                 let randomX = CGFloat(arc4random_uniform(UInt32(self.view.frame.maxX)))
                 
@@ -122,27 +134,33 @@ class ViewController: UIViewController, AVCaptureAudioDataOutputSampleBufferDele
                     // play pop sound
                     bubble.removeFromSuperview()
                     
-                    let balloonData = NSDataAsset(name: "Balloon")
+                    guard let balloonData = NSDataAsset(name: "Balloon") else { return }
+                    guard let player = try? AVAudioPlayer(data: balloonData.data) else { return }
                     
-                    let player = try?AVAudioPlayer(data: balloonData!.data)
+                    self.players.append(player)
                     
-                    self.players.append(player!)
+                    player.delegate = self
+                    player.play()
                     
-                    player?.delegate = self
-                    player?.play()
                 }
+                
             }
            
         }
         
     }
-
+    
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         
         guard let index = players.index(of: player) else { return }
         players.remove(at: index)
         
         print(players.count)
+        
+    }
+    
+    deinit {
+        print("Cleaned up ")
     }
 
 }
