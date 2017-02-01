@@ -18,6 +18,8 @@ class ViewController: UIViewController, AVCaptureAudioDataOutputSampleBufferDele
     let captureDevice = AVCaptureDevice.defaultDevice(withMediaType: AVMediaTypeAudio)
     var captureInput : AVCaptureDeviceInput?
     var captureOutput : AVCaptureAudioDataOutput?
+    
+    var hasReadInstructions: Bool = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -62,20 +64,18 @@ class ViewController: UIViewController, AVCaptureAudioDataOutputSampleBufferDele
          session.startRunning()
         
         let alertController = UIAlertController(title: "Instructions", message: "Blow into microphone to produce bubbles.", preferredStyle: UIAlertControllerStyle.alert)
-        let cancelAction = UIAlertAction(title: "Cancel", style: UIAlertActionStyle.cancel) { (result : UIAlertAction) -> Void in
-            print("Cancel")
-        }
         let okAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default) { (result : UIAlertAction) -> Void in
             print("OK")
+            self.hasReadInstructions = true
         }
-        alertController.addAction(cancelAction)
         alertController.addAction(okAction)
-        self.present(alertController, animated: true, completion: nil)
+        present(alertController, animated: true, completion: nil)
+        
     }
     
     func captureOutput(_ captureOutput: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, from connection: AVCaptureConnection!) {
         
-       
+        guard hasReadInstructions else { return }
         
         guard let channel = connection.audioChannels.first as? AVCaptureAudioChannel else { return }
 
@@ -139,6 +139,7 @@ class ViewController: UIViewController, AVCaptureAudioDataOutputSampleBufferDele
                     
                     self.players.append(player)
                     
+                    player.volume = 0.4
                     player.delegate = self
                     player.play()
                     
